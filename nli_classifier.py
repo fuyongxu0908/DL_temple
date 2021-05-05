@@ -11,10 +11,10 @@ import numpy as np
 LR = 0.001
 EPOCH = 2
 SEED = 0
-TRAIN_DATA_LEN = 30000
-TRAIN_BATCH = 32
-VALID_BATCH = 32
-VALID_DATA_LEN = 10000
+TRAIN_DATA_LEN = 1000
+TRAIN_BATCH = 10
+VALID_BATCH = 10
+VALID_DATA_LEN = 1000
 MAX_LEN = 50
 W_EMBEDDING_DIM = 128
 HIDDEN_DIM = 256
@@ -144,7 +144,8 @@ class NliClassifier(nn.Module):
     def __init__(self, vocab):
         super(NliClassifier, self).__init__()
         self.Embedding = nn.Embedding(len(vocab), W_EMBEDDING_DIM)
-        self.LSTM = nn.LSTM(W_EMBEDDING_DIM, HIDDEN_DIM, num_layers=1, dropout=0)
+        self.LSTM_one = nn.LSTM(W_EMBEDDING_DIM, HIDDEN_DIM, num_layers=1, dropout=0)
+        self.LSTM_two = nn.LSTM(W_EMBEDDING_DIM, HIDDEN_DIM, num_layers=1, dropout=0)
         self.MLP = MLP().cuda()
 
         pass
@@ -152,7 +153,7 @@ class NliClassifier(nn.Module):
     def forward(self, s1, s2):
         embedd_s1, embedd_s2 = self.Embedding(s1), self.Embedding(s2)
         torch.backends.cudnn.enabled = False
-        encoded_s1, encoded_s2 = self.LSTM(embedd_s1.permute([1, 0, 2]))[0][-1], self.LSTM(embedd_s2.permute([1, 0, 2]))[0][-1]
+        encoded_s1, encoded_s2 = self.LSTM_one(embedd_s1.permute([1, 0, 2]))[0][-1], self.LSTM_two(embedd_s2.permute([1, 0, 2]))[0][-1]
         return self.MLP(encoded_s1, encoded_s2)
 
 
